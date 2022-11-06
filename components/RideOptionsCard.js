@@ -3,10 +3,13 @@ import React, { useState } from 'react'
 import tw from 'twrnc'
 import { Icon } from "@rneui/themed";
 import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import { selectTravelTimeInformation } from '../slices/navSlice';
 
 const RideOptionsCard = () => {
   const navigation = useNavigation();
   const [selected, setSelected] = useState(null)
+  const travelTimeInformation = useSelector(selectTravelTimeInformation)
 
   const data = [
     {
@@ -29,16 +32,19 @@ const RideOptionsCard = () => {
     },
   ]
 
+  //  if we have surge pricing, this goes up
+  const SURGE_PRICE = 1.5;
+
   return (
     <SafeAreaView style={tw`bg-white flex-grow`}>
       <View>
         <TouchableOpacity 
-          style={tw`absolute top-3 left-5 p-3 rounded-full bg-red-500`}
+          style={tw`absolute top-3 left-5 p-3 rounded-full`}
           onPress={() => navigation.navigate('NavigateCard')}
         >
           <Icon name="chevron-left" type='fontawesome' />
         </TouchableOpacity>
-          <Text style={tw`text-center py-3 text-xl`}>Select a Ride</Text>
+          <Text style={tw`text-center py-3 text-xl`}>Select a Ride - { travelTimeInformation?.distance?.text }</Text>
       </View>
 
       <FlatList 
@@ -59,16 +65,28 @@ const RideOptionsCard = () => {
             />
             <View style={tw`-ml-6`}>
               <Text style={tw`text-xl font-semibold`}>{title}</Text>
-              <Text>Travel time...</Text>
+              <Text>{travelTimeInformation?.duration?.text} Travel Time</Text>
             </View>
 
-            <Text style={tw`text-xl`}>RM 5</Text>
+            <Text style={tw`text-xl`}>
+              {
+                new Intl.NumberFormat('ms-MY', {
+                  style: 'currency',
+                  currency: 'MYR'
+                }).format(
+                  (travelTimeInformation?.duration?.value * SURGE_PRICE * mutiplier) / 100
+                )
+              }
+            </Text>
           </TouchableOpacity>
         )}
       />
 
-      <View>
-        <TouchableOpacity style={tw`bg-black py-3 m-3 rounded ${!selected && `bg-gray-300`}`} disabled={!selected}>
+      <View style={tw`mt-auto border-t border-gray-200`}>
+        <TouchableOpacity 
+          style={tw`bg-black py-3 m-3 rounded ${!selected && `bg-gray-300`}`} 
+          disabled={!selected}
+        >
           <Text style={tw`text-center text-white text-xl`}>Choose { selected?.title }</Text>
         </TouchableOpacity>
       </View>
